@@ -1,2 +1,8 @@
 import { canonicalBytes,DOMAINS,signedBytes } from '../core/canonical.js'; import {sign} from '../core/keys-crypto.js';
-export function snapshot(events,rejects,epoch,privateKey,issuedAt=Date.now()){const accepted=events.filter(e=>e.alloc_eligible);const sum=accepted.reduce((n,e)=>n+e.weight,0);const allocations=accepted.map(e=>({...e,normalized_weight:e.weight/Math.max(1,sum)}));const body={spec:'SIGNET-ALLOC-v1',registry_epoch:epoch,issued_at_ms:issuedAt,allocations,reject_counts:rejects};return {...body,signature:sign(body,privateKey,DOMAINS.ALLOC)};}
+export function snapshot(events, rejects, epoch, privateKey, issuedAt = Date.now()) {
+  const accepted = events.filter((e) => e.alloc_eligible === true);
+  const sum = accepted.reduce((n, e) => n + e.weight, 0);
+  const allocations = accepted.map((e) => ({ ...e, normalized_weight: e.weight / Math.max(1, sum) }));
+  const body = { spec: 'SIGNET-ALLOC-v1', registry_epoch: epoch, issued_at_ms: issuedAt, allocations, reject_counts: rejects };
+  return privateKey ? { ...body, signature: sign(body, privateKey, DOMAINS.ALLOC) } : body;
+}

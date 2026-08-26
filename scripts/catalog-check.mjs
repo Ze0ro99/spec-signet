@@ -1,2 +1,10 @@
-import { readFile } from 'node:fs/promises'; import { createHash } from 'node:crypto';
-const raw=await readFile(new URL('../packs/catalog.v1.json',import.meta.url)); JSON.parse(raw); const hash=createHash('sha256').update(raw).digest('hex'); console.log(`catalog sha256:${hash}`);
+import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+const catalog = new URL('../packs/catalog.v1.json', import.meta.url);
+const frozen = new URL('../packs/catalog.v1.hash', import.meta.url);
+const raw = await readFile(catalog);
+JSON.parse(raw);
+const actual = `sha256:${createHash('sha256').update(raw).digest('hex')}`;
+const expected = (await readFile(frozen, 'utf8')).trim();
+if (actual !== expected) throw new Error(`catalog hash mismatch: ${actual} != ${expected}`);
+console.log(`catalog OK ${actual}`);

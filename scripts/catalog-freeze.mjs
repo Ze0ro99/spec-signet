@@ -1,1 +1,4 @@
-import {readFile,writeFile} from 'node:fs/promises';import {createHash} from 'node:crypto';const raw=await readFile(new URL('../packs/catalog.v1.json',import.meta.url));await writeFile(new URL('../packs/catalog.v1.hash',import.meta.url),`sha256:${createHash('sha256').update(raw).digest('hex')}\n`);
+import { readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+const raw = await readFile(new URL('../packs/catalog.v1.json', import.meta.url));
+await writeFile(new URL('../packs/catalog.v1.hash', import.meta.url), `sha256:${createHash('sha256').update(raw).digest('hex')}\n`);
