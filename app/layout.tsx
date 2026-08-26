@@ -3,9 +3,10 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'SIGNET — Verifiable evidence architecture',
+  description:
+    'An independent, sealed stack for signed engagement evidence, rewards, allocation, and transparency claims.',
+  generator: 'SIGNET',
   icons: {
     icon: [
       {
