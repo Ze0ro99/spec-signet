@@ -1,0 +1,3 @@
+import { DOMAINS, canonicalBytes, signedBytes, evidenceId } from '../core/canonical.js'; import { sign,verifySignature } from '../core/keys-crypto.js'; import { validateReceipt } from '../core/schema.js';
+export function issueReceipt(event,window,issuer,privateKey,issuedAt=Date.now()){const body={spec:'SIGNET-RECEIPT-v1',app_id:event.app_id,evidence_id:evidenceId(event),claim_window:window,pioneer_uid_hash:event.pioneer_uid_hash,pack:'reward-claim-v1',issued_at_ms:issuedAt};return {...body,issuer,signature:sign(body,privateKey,DOMAINS.RECEIPT)};}
+export function verifyReceipt(r,pubkey){const {signature,...b}=r;return validateReceipt(r)&&verifySignature(b,signature,pubkey,DOMAINS.RECEIPT);}

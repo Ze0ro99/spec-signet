@@ -1,0 +1,1 @@
+{"pack":"retail-purchase-v1","issuer_allowlist":["app.marketplace"],"action_classes":["A"],"action_ids":["retail.order_delivered"],"min_weight":1,"max_weight":80,"max_age_ms":86400000,"require_kyc":true,"require_mainnet":true,"require_epoch_bound":true}

@@ -1,0 +1,3 @@
+import { readFile, writeFile } from 'node:fs/promises';
+export class InMemoryNonceStore { constructor(){this.used=new Set();} claimIfAbsent(app, nonce){const k=`${app}\0${nonce}`; if(this.used.has(k)) return false; this.used.add(k); return true;} }
+export class FileNonceStore { constructor(path){this.path=path; this.used=new Set(); this.ready=this.load();} async load(){try{this.used=new Set(JSON.parse(await readFile(this.path,'utf8')))}catch{}} async claimIfAbsent(app, nonce){await this.ready; const k=`${app}\0${nonce}`; if(this.used.has(k)) return false; this.used.add(k); await writeFile(this.path, JSON.stringify([...this.used])); return true;} }
