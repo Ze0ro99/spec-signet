@@ -1,0 +1,1 @@
+{"name":"retail-valid","context":{"pack":"retail-purchase-v1","action_id":"retail.order_delivered","app_id":"app.marketplace","raw_uid":"pioneer-1","weight":50,"timestamp_ms":1764000000000,"nonce":"n-retail-0000001"},"expect":{"crypto":"ALLOW","policy":"ALLOW","code":"OK"}}

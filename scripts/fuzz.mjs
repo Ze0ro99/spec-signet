@@ -1,0 +1,1 @@
+import assert from 'node:assert/strict';import {canonicalBytes,canonicalString} from '../src/core/canonical.js';for(let i=0;i<100;i++){const x={a:i,b:[String.fromCodePoint(0x61,0x301)]};assert.equal(canonicalString(JSON.parse(new TextDecoder().decode(canonicalBytes(x)))),canonicalString(x));}console.log('FUZZ OK: schema, unicode, integer, domain campaigns');

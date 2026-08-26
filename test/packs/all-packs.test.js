@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {loadPacks} from '../../src/policy/packs.js';
+test('all six packs are closed and loadable',()=>{const p=loadPacks();assert.equal(Object.keys(p).length,6);for(const v of Object.values(p))assert.deepEqual(Object.keys(v).sort(),['action_classes','action_ids','issuer_allowlist','max_age_ms','max_weight','min_weight','pack','require_epoch_bound','require_kyc','require_mainnet'].sort());});
