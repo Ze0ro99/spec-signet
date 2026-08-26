@@ -1,0 +1,1 @@
+{"$id":"signet://schema/action-catalog/v1","type":"object","additionalProperties":false,"required":["catalog_id","version","class_ceilings","actions"],"properties":{"catalog_id":{"type":"string"},"version":{"type":"string"},"class_ceilings":{"type":"object"},"actions":{"type":"object"}}}

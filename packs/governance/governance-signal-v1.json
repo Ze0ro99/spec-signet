@@ -1,0 +1,1 @@
+{"pack":"governance-signal-v1","issuer_allowlist":["app.gov"],"action_classes":["C"],"action_ids":["gov.signal"],"min_weight":1,"max_weight":1,"max_age_ms":86400000,"require_kyc":true,"require_mainnet":true,"require_epoch_bound":true}

@@ -1,6 +1,6 @@
 {
   "name":"signet","version":"1.0.0","type":"module","private":true,
   "engines":{"node":">=18"},
-  "scripts":{"test":"node --test test/**/*.test.js","test:core":"node --test test/core","attacks:core":"node --test test/core/attacks.test.js","catalog:freeze":"node scripts/catalog-freeze.mjs","catalog:check":"node scripts/catalog-check.mjs","gen:vectors":"node scripts/gen-vectors.mjs && node scripts/check-vectors.mjs","ci":"npm test && npm run attacks:core && npm run catalog:check && npm run gen:vectors"},
+  "scripts":{"test":"node --test test/**/*.test.js test/**/**/*.test.js","test:core":"node --test test/core","test:keys":"node --test test/keys","test:eligibility":"node --test test/eligibility","test:weights":"node --test test/weights","test:packs":"node --test test/packs","test:receipts":"node --test test/receipts","test:transparency":"node --test test/transparency","test:diff":"node --test test/diff","attacks:core":"node --test test/core/attacks.test.js","catalog:freeze":"node scripts/catalog-freeze.mjs","catalog:check":"node scripts/catalog-check.mjs","gen:vectors":"node scripts/gen-vectors.mjs && node scripts/check-vectors.mjs","ci":"npm test && npm run attacks:core && npm run catalog:check && npm run gen:vectors"},
   "dependencies":{},"devDependencies":{}
 }

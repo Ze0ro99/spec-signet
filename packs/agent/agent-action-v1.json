@@ -1,0 +1,1 @@
+{"pack":"agent-action-v1","issuer_allowlist":["app.agent"],"action_classes":["B"],"action_ids":["agent.acted"],"min_weight":1,"max_weight":10,"max_age_ms":86400000,"require_kyc":true,"require_mainnet":true,"require_epoch_bound":true}

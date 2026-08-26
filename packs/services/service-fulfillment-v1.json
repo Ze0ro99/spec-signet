@@ -1,0 +1,1 @@
+{"pack":"service-fulfillment-v1","issuer_allowlist":["app.services"],"action_classes":["B"],"action_ids":["service.fulfilled"],"min_weight":1,"max_weight":15,"max_age_ms":86400000,"require_kyc":true,"require_mainnet":true,"require_epoch_bound":true}

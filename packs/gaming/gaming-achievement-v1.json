@@ -1,0 +1,1 @@
+{"pack":"gaming-achievement-v1","issuer_allowlist":["app.game"],"action_classes":["C"],"action_ids":["gaming.achievement"],"min_weight":1,"max_weight":3,"max_age_ms":86400000,"require_kyc":true,"require_mainnet":true,"require_epoch_bound":true}
