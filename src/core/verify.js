@@ -9,6 +9,8 @@ export async function verifyEngagement(event, ctx) {
   if (!ctx.registry.hasApp(event.app_id)) return deny('UNKNOWN_APP');
   const key = ctx.registry.getKey(event.app_id, event.key_id);
   if (!key) return deny('UNKNOWN_KEY');
+  if (key.not_before_ms != null && event.timestamp_ms < key.not_before_ms) return deny('KEY_NOT_YET_VALID');
+  if (key.expires_at_ms != null && event.timestamp_ms >= key.expires_at_ms) return deny('EXPIRED_KEY');
   if (key.revoked_at_ms != null && event.timestamp_ms >= key.revoked_at_ms) return deny('REVOKED_KEY');
   const { signature, ...body } = event;
   try { canonicalBytes(body); } catch { return deny('SCHEMA'); }

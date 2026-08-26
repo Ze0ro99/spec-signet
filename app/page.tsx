@@ -1,3 +1,5 @@
+import { buildViewerStatus } from '../src/viewer/status.js'
+
 function Mark({ type }: { type: 'check' | 'arrow' | 'lock' | 'pulse' }) {
   if (type === 'check') {
     return (
@@ -61,7 +63,9 @@ const checklist = [
   ['Read-only transparency viewer', 'This surface', 'check'],
 ] as const
 
-export default function Page() {
+export default async function Page() {
+  const viewer = await buildViewerStatus()
+
   return (
     <main className="site-shell">
       <div className="ambient-glow ambient-glow-one" />
@@ -107,6 +111,11 @@ export default function Page() {
             SIGNET is not production-ready, audited, or a replacement for piproof.
             This surface is a viewer of the work, never an authority.
           </p>
+          <div className="live-result">
+            <span className="live-result-label"><span className="live-result-dot" /> Live fixture</span>
+            <span className="live-result-value">{viewer.decision.code} / {viewer.decision.policy}</span>
+            <span className="live-result-detail">decide() · snapshot()</span>
+          </div>
           <div className="meter" aria-label="Work in progress">
             <span className="meter-fill" />
           </div>

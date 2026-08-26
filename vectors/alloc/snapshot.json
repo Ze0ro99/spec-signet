@@ -1,0 +1,9 @@
+{
+  "name": "stable-alloc-snapshot",
+  "spec": "SIGNET-ALLOC-v1",
+  "expect": {
+    "sort_by": "evidence_id",
+    "sum_only": "alloc_eligible=true",
+    "reject_counts": true
+  }
+}

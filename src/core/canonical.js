@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 function normalize(value, path = '$') {
   if (value === null || typeof value === 'boolean' || typeof value === 'string') return typeof value === 'string' ? value.normalize('NFC') : value;
   if (typeof value === 'number') {
-    if (!Number.isSafeInteger(value) || value < 0 || Object.is(value, -0)) throw new TypeError(`invalid integer at ${path}`);
+    if (!Number.isFinite(value) || value < 0 || Object.is(value, -0)) throw new TypeError(`invalid number at ${path}`);
     return value;
   }
   if (Array.isArray(value)) return value.map((v, i) => { if (!(i in value)) throw new TypeError(`array hole at ${path}`); return normalize(v, `${path}[${i}]`); });
