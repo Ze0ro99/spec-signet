@@ -1,0 +1,7 @@
+{
+  "escrow": { "code": "UNVERIFIABLE" },
+  "floor": { "code": "OK", "numerator": "1", "denominator": "400" },
+  "pool": { "code": "K_OK" },
+  "engagement": { "code": "OK" },
+  "alloc": { "code": "OK" }
+}

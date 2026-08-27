@@ -1,1 +1,12 @@
-export class ReceiptStore{constructor(){this.claims=new Set()}claimIfAbsent(app,evidence,window){const k=`${app}\0${evidence}\0${window}`;if(this.claims.has(k))return false;this.claims.add(k);return true;}}
+export class ReceiptStore {
+  constructor() { this.claims = new Set() }
+  claimIfAbsent(app, evidence, window) {
+    const key = `${app}\0${evidence}\0${window}`
+    if (this.claims.has(key)) return false
+    this.claims.add(key)
+    return true
+  }
+}
+
+export class InMemoryReceiptStore extends ReceiptStore {}
+

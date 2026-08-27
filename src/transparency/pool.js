@@ -1,1 +1,11 @@
-export function poolInvariant(samples,tau){return samples.map((s,i)=>{const k=s.x*s.y; if(i===0)return {...s,k,status:'K_OK'};const prior=samples[i-1].x*samples[i-1].y;const delta=k-prior;return {...s,k,status:delta< -Math.abs(prior)*tau?'K_DROP':delta>0?'K_UP':'K_OK'};});}
+export function poolInvariant(samples, tau = 0) {
+  if (!Array.isArray(samples) || samples.length === 0) return []
+  const initial = BigInt(samples[0].x) * BigInt(samples[0].y)
+  return samples.map((sample) => {
+    const k = BigInt(sample.x) * BigInt(sample.y)
+    const delta = k - initial
+    const drop = initial !== 0n && Number((-delta * 1000000n) / initial) > tau * 1000000
+    const status = drop ? 'K_DROP' : delta > 0n ? 'K_UP' : 'K_OK'
+    return { ...sample, k: Number(k), status, code: status }
+  })
+}

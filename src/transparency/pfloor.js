@@ -1,2 +1,19 @@
-function gcd(a,b){while(b){const t=a%b;a=b;b=t;}return a;}
-export function computeFloor(R,S,Q){for(const v of [R,S,Q])if(typeof v!=='bigint'||v<0n)throw new Error('FLOOR_INPUT');const d=R+S;if(d===0n)return {code:'FLOOR_UNDEFINED'};const n=R*Q, den=d*d, g=gcd(n,den);return {code:'OK',numerator:n/g,denominator:den/g};}
+function gcd(a, b) {
+  while (b !== 0n) [a, b] = [b, a % b]
+  return a < 0n ? -a : a
+}
+
+export function computeFloor(input, S, Q) {
+  const values = typeof input === 'object' ? input : { R: input, S, Q }
+  const { R, S: supply, Q: quantity } = values
+  for (const [name, value] of Object.entries({ R, S: supply, Q: quantity })) {
+    if (typeof value !== 'bigint' || value < 0n) throw new TypeError(`${name} must be a non-negative BigInt`)
+  }
+  const denominator = (R + supply) ** 2n
+  if (denominator === 0n) return { code: 'FLOOR_UNDEFINED' }
+  const numerator = R * quantity
+  const divisor = gcd(numerator, denominator)
+  return { code: 'OK', numerator: numerator / divisor, denominator: denominator / divisor }
+}
+
+export const pFloor = computeFloor
