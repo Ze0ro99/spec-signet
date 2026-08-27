@@ -1,0 +1,441 @@
+
+
+## 0. Working rules (non-negotiable)
+
+1. Evidence plane stays frozen. No new PEP fields.
+2. Transparency math lives in dedicated domains, never inside a PEP event.
+3. `p_floor` and `k` are computed from **caller-supplied** `R,S,Q` (and pool reserves). The verifier does **not** fetch chain state.
+4. A signature proves authenticity of a claim, never truth of reserves.
+5. Policy cannot override a crypto `DENY`.
+6. No silent weight clamp. No invented dashboard numbers.
+7. Every behavior needs a committed vector and an exact code.
+8. Do not paste piproof files. Re-implement against this playbook.
+9. `docs/MATURITY.md` is the only status source. Marketing follows it.
+10. `app/` is a viewer. It may only render `snapshot()` / `decide()` output.
+
+---
+
+## 1. What “ready” means
+
+The team may call SIGNET **ready for internal use** when all of the following pass on a clean clone:
+
+```bash
+git clone https://github.com/Ze0ro99/spec-signet.git
+cd spec-signet
+npm run ci
+npm run transparency
+npm run demo
+```
+
+`npm run ci` must include: unit tests, attack matrix, catalog hash gate, vector diff-gate, layer check, conformance, domain-confusion, transparency vectors.
+
+A stranger gets the same codes and the same snapshot bytes.  
+Until then, say: *scaffold, not ready*.
+
+---
+
+## 2. Repository target layout
+
+Keep existing `src/core`, `src/keys`, `src/adapter`, `src/policy`, `src/receipt`.  
+Add or finish these files:
+
+```text
+src/transparency/escrow.js          # SIGNING_AUTHORITY_REVOKED attestations
+src/transparency/pfloor.js          # p_floor + k-health
+src/transparency/engagement.js      # PoA / PoU / consistency + clamped manifests
+src/transparency/dashboard.js       # fuse snapshot
+src/transparency/claims.js          # keep generic claim verify (already present)
+
+schema/escrow-revocation.schema.json
+schema/pfloor-report.schema.json
+schema/pool-health.schema.json
+schema/dashboard-snapshot.schema.json
+schema/engagement-score.schema.json
+
+vectors/transparency/escrow-revoked.json
+vectors/transparency/escrow-stale.json
+vectors/transparency/pfloor-valid.json
+vectors/transparency/k-drop.json
+vectors/transparency/pep-with-floor.json
+vectors/transparency/dashboard-stable.json
+
+test/transparency/escrow.test.js
+test/transparency/pfloor.test.js
+test/transparency/k-health.test.js
+test/transparency/engagement-score.test.js
+test/transparency/dashboard.test.js
+test/keys/register.test.js
+test/keys/rotate.test.js
+test/keys/revoke.test.js
+test/core/attacks.test.js           # fix SCHEMA vs INVALID_SIGNATURE
+test/diff/python-agree.test.js
+
+scripts/transparency.mjs
+app/transparency/page.tsx           # read-only renderer
+```
+
+Remove or quarantine the v0 placeholder copy on `app/page.tsx` so GitHub does not look like a Next.js starter.
+
+---
+
+## 3. Phase A — freeze the evidence kernel (do first)
+
+### A1. Fix `verify` / `decide`
+
+`verifyEngagement` returns only:
+
+```js
+{ crypto: 'ALLOW'|'DENY', code, evidence_id, registry_epoch }
+```
+
+`decide` sets `policy` and `alloc_eligible`.  
+If `crypto !== 'ALLOW'`, return the **crypto code** unchanged.
+
+### A2. Fix the forged-signature test
+
+A schema-valid event with a bad signature must be `INVALID_SIGNATURE`, not `SCHEMA`.  
+`verifyEngagement({}, ctx)` staying `SCHEMA` is fine for an empty object.
+
+### A3. Attack matrix (minimum)
+
+Live signed events, not mocked denials:
+
+`SCHEMA`, `UNKNOWN_APP`, `UNKNOWN_KEY`, `KEY_NOT_YET_VALID`, `EXPIRED_KEY`, `REVOKED_KEY`, `INVALID_SIGNATURE`, `TIMESTAMP_EXPIRED`, `TIMESTAMP_IN_FUTURE`, `WEIGHT_OVERFLOW`, `INELIGIBLE_USER`, `REPLAY_DETECTED`, extra field, missing field, bad spec, post-sign mutation, cross-app key.
+
+Nonce is burned only after steps 1–8 pass.
+
+### A4. Keys (Nicolas: “how are keys registered and rotated?”)
+
+Implement `SIGNET-KEY-v1` ops:
+
+- `register`
+- `rotate` with optional read overlap (`not_before` / `not_after`)
+- `revoke` instant (`timestamp_ms >= revoked_at_ms` → `REVOKED_KEY`)
+
+Tests in `test/keys/*`. Certificates are signed by the **registry issuer**, not by the app key being registered.
+
+### A5. Catalog and packs
+
+Keep the six packs.  
+`catalog:check` fails if bytes change without a version bump.  
+`decide()` includes `catalog_hash`.
+
+When Phase A is green, the PEP core is usable. Transparency is still incomplete.
+
+---
+
+## 4. Phase B — Nicolas four concepts (Transparency Layer)
+
+All four are **off-chain attestations or pure functions**. No RPC.
+
+Signature domains:
+
+| Domain | Artifact |
+|---|---|
+| `SIGNET-PEP-v1\n` | engagement |
+| `SIGNET-KEY-v1\n` | key certs |
+| `SIGNET-ESCROW-v1\n` | escrow lock / revocation |
+| `SIGNET-FLOOR-v1\n` | p_floor report |
+| `SIGNET-POOL-v1\n` | x·y=k health |
+| `SIGNET-ALLOC-v1\n` | allocation snapshot |
+| `SIGNET-DASH-v1\n` | fused dashboard snapshot |
+| `SIGNET-RECEIPT-v1\n` | reward receipt |
+
+A PEP signature MUST fail under every other domain.
+
+### B1. Escrow lock / revoked signing authority
+
+**File:** `src/transparency/escrow.js`
+
+Closed body:
+
+```json
+{
+  "spec": "SIGNET-ESCROW-v1",
+  "status": "SIGNING_AUTHORITY_REVOKED",
+  "escrow_id": "launchpad.escrow.main",
+  "key_id": "escrow-k1",
+  "key_fingerprint": "sha256:...",
+  "revoked_at_ms": 0,
+  "as_of_ms": 0,
+  "registry_epoch": "...",
+  "nonce": "...",
+  "anchor": null,
+  "issuer": "launchpad",
+  "signature": "..."
+}
+```
+
+Rules:
+
+- `status` enum: `LOCKED` | `UNLOCKED` | `SIGNING_AUTHORITY_REVOKED`
+- `key_fingerprint` = SHA-256 of the revoked public key bytes
+- freshness: `as_of_ms` within configured window or `ESCROW_STALE`
+- replay: nonce store scoped to `escrow_id` or `ESCROW_REPLAY`
+- `anchor` is an optional opaque reference; **never resolved by the verifier**
+- verify under `SIGNET-ESCROW-v1` only
+
+Tests:
+
+- valid revoked attestation → `ATTESTED`
+- wrong domain → `UNVERIFIABLE`
+- stale `as_of_ms` → `ESCROW_STALE`
+- replay nonce → `ESCROW_REPLAY`
+- fingerprint mismatch vs registry key → `ESCROW_FINGERPRINT`
+
+### B2. Dynamic p_floor (caller-supplied reserves)
+
+**File:** `src/transparency/pfloor.js`
+
+Pure function. Inputs are integers supplied by the caller (launchpad/oracle app), not chain reads.
+
+\[
+p_{\mathrm{floor}}=\frac{R\cdot Q}{(R+S)^{2}}
+\]
+
+Also compute hypothetical full-dump average price if that is specified as `method_id = "circulating-v1"`:
+
+Document the exact integer arithmetic (no IEEE floats in the signed report).
+
+Recommended integer form:
+
+- use BigInt
+- report `{ numerator, denominator, method_id }` already in the schema
+- `computePFloor({ R, S, Q })` must reduce the fraction (gcd) then sign the report
+
+Reject:
+
+- `R,S,Q` not safe non-negative integers
+- `R+S === 0` → `FLOOR_UNDEFINED`
+- embedding `p_floor` inside a PEP event → `SCHEMA`
+
+Tests with frozen fixtures:
+
+| R | S | Q | expected reduced fraction |
+|---|---|---|---|
+| 100 | 0 | 1 | `1/100` wait: (100*1)/(100+0)^2 = 100/10000 = 1/100 |
+| 100 | 100 | 1 | 100/40000 = 1/400 |
+| 0 | 0 | 1 | `FLOOR_UNDEFINED` |
+
+The signed report does not claim the inputs are true. It claims: *this issuer attested this fraction at this epoch*.
+
+### B3. x·y = k invariant health
+
+**File:** same module or `src/transparency/pool.js`
+
+Inputs: time-ordered samples `{ t, x, y }` or `{ t, R, S }` where `k = x * y`.
+
+Rules:
+
+- `k_i = x_i * y_i` (BigInt)
+- tolerance `tau` (basis points, catalog constant, e.g. 50 = 0.50%)
+- if `k_i < k_{i-1} * (10000 - tau) / 10000` → flag `K_DROP` (liquidity extraction signal)
+- if `k` increases, record `K_UP` as informational, not a PEP failure
+- output a time-ordered health report signed as `SIGNET-POOL-v1`
+
+Tests:
+
+- flat `k` → `K_OK`
+- drop beyond tau → `K_DROP`
+- drop within tau → `K_OK`
+- PEP event containing `k` → `SCHEMA`
+
+This is a **signal**, not an automatic trade halt.
+
+### B4. Engagement scoring + clamped manifests
+
+**File:** `src/transparency/engagement.js`
+
+Use only **policy-ALLOW** PEP events.
+
+- PoA: count of accepted actions in window  
+- PoU: sum of class-capped weights  
+- Consistency: reward spread-over-time vs end-window burst  
+  Example: `consistency = unique_days / window_days` clamped to `[0,1]` as integer ppm  
+- Composite: `score = PoU * consistency_ppm / 1_000_000`  
+- Per-project manifest weights may be **lowered**, never raised above protocol ceilings
+
+Tests:
+
+- burst of 90% events in last 5% of window scores lower than even spread  
+- manifest `weight > ceiling` rejected  
+- manifest `weight < ceiling` accepted  
+
+### B5. Transparency dashboard engine
+
+**File:** `src/transparency/dashboard.js`
+
+Pure fuse. No I/O.
+
+```json
+{
+  "spec": "SIGNET-DASH-v1",
+  "registry_epoch": "...",
+  "issued_at_ms": 0,
+  "escrow": { "status": "ATTESTED|UNVERIFIABLE", "code": "...", "claim": {} },
+  "pfloor": { "status": "...", "numerator": 0, "denominator": 1, "method_id": "circulating-v1" },
+  "pool": { "status": "K_OK|K_DROP|UNVERIFIABLE", "k": "..." },
+  "engagement": { "leaderboard": [], "consistency_note": "..." },
+  "alloc": { "reject_counts": {}, "sum_eligible_weight": 0 },
+  "unverified_inputs": []
+}
+```
+
+Rules:
+
+- missing escrow/floor/pool → field status `UNVERIFIABLE`, never a guessed number  
+- `unverified_inputs` lists every raw reserve figure that was not attested  
+- canonical bytes of this object are signed under `SIGNET-DASH-v1` by the snapshot issuer  
+- recompute from the same inputs → identical bytes (JS and later Python)
+
+**CLI:** `npm run transparency` prints the snapshot JSON and writes `results/transparency.json`.  
+**UI:** render that JSON only.
+
+Tests:
+
+- same inputs → byte-identical snapshot  
+- missing floor → `UNVERIFIABLE` + no numeric invention  
+- PEP+`p_floor` field still `SCHEMA`  
+- dashboard signer cannot set `crypto: ALLOW` on a bad PEP
+
+---
+
+## 5. Phase C — proof density (required before any “better than piproof” sentence)
+
+| Item | Command / file | Pass |
+|---|---|---|
+| Conformance | `npm run conformance` | valid + ≥20 PEP attacks + pack + receipt + escrow + floor |
+| Vectors committed | `vectors/**` | `gen:vectors` dirty-diff fails CI |
+| Python verifier | `sdk/python/signet_verify.py` | same codes on frozen vectors |
+| Domain confusion | `test/diff/domain-confusion.test.js` | every domain pair |
+| Fuzz | `npm run fuzz` | 5 seeded campaigns |
+| Layers | `npm run check-layers` | core does not import app/dashboard math into verify |
+| Formal | `formal/signet_gates.tla` | CI runs TLC **or** maturity says “model only, checker pending” honestly |
+| Receipts | already sketched | first OK, second `RECEIPT_REPLAY`, deny does not burn |
+| Offline | tests with no network | verify + dashboard fuse work |
+
+Python may start as PEP+canonical+codes only, then add p_floor gcd and dashboard canonicalization.
+
+---
+
+## 6. Phase D — product surfaces the team can run today after A–C
+
+### package.json scripts
+
+```json
+{
+  "scripts": {
+    "test": "node scripts/test-runner.mjs",
+    "attacks:core": "node --test test/core",
+    "conformance": "node scripts/conformance.mjs",
+    "catalog:check": "node scripts/catalog-check.mjs",
+    "gen:vectors": "node scripts/gen-vectors.mjs && node scripts/check-vectors.mjs",
+    "check-layers": "node scripts/check-layers.mjs",
+    "fuzz": "node scripts/fuzz.mjs",
+    "demo": "node scripts/demo.mjs",
+    "transparency": "node scripts/transparency.mjs",
+    "bench": "node scripts/bench.mjs",
+    "ci": "npm test && npm run attacks:core && npm run catalog:check && npm run gen:vectors && npm run check-layers && npm run conformance"
+  }
+}
+```
+
+### Demo contract (`scripts/demo.mjs`)
+
+Print in order:
+
+1. register app + key  
+2. sign one retail PEP  
+3. verify ALLOW  
+4. replay DENY `REPLAY_DETECTED`  
+5. decide pack  
+6. issue receipt once; second claim `RECEIPT_REPLAY`  
+7. build escrow revocation + p_floor report + k series  
+8. print dashboard snapshot  
+9. exit 0 only if fixtures match
+
+### README (keep short)
+
+Title, what it proves / does not prove, clone commands above, link `docs/NICOLAS_TRACE.md` and `docs/MATURITY.md`.  
+No “v1 complete”. No “better than piproof” until Phase C is green **and** Phase B vectors match the four concepts.
+
+### `docs/NICOLAS_TRACE.md`
+
+Turn every row into `PASS` + command. Example row:
+
+```text
+Escrow revocation | src/transparency/escrow.js | npm test -- test/transparency/escrow.test.js | PASS
+```
+
+CI must fail if a row says PASS and the command is missing.
+
+---
+
+## 7. Implementation order for the next 10 PRs
+
+| PR | Scope | Merge rule |
+|---|---|---|
+| 1 | A1–A3 verify/decide/attacks | attack matrix green, signature code fixed |
+| 2 | A4 key certs | register/rotate/revoke tests |
+| 3 | A5 catalog hash in decide | catalog:check green |
+| 4 | B1 escrow revocation | escrow vectors |
+| 5 | B2 p_floor BigInt + fixtures | fraction tests |
+| 6 | B3 k-health | K_DROP / K_OK |
+| 7 | B4 engagement scores | burst vs sustained |
+| 8 | B5 dashboard fuse + `npm run transparency` | byte-stable snapshot |
+| 9 | C conformance + Python PEP verify | two-language codes match |
+| 10 | D demo/README/NICOLAS_TRACE PASS table | stranger clone works |
+
+Do not start PR 8 before 4–6. A dashboard without real escrow/floor/k is theater.
+
+---
+
+## 8. Exact codes to add (transparency)
+
+Keep existing PEP codes. Add:
+
+`ATTESTED`, `UNVERIFIABLE`,  
+`ESCROW_STALE`, `ESCROW_REPLAY`, `ESCROW_FINGERPRINT`,  
+`FLOOR_UNDEFINED`, `FLOOR_DOMAIN`,  
+`K_OK`, `K_DROP`, `K_UP`,  
+`DASH_UNVERIFIABLE_INPUT`
+
+Do not reuse `OK` for unattested numbers.
+
+---
+
+## 9. What the team can use immediately (even before v1)
+
+After PR 1–3 only:
+
+- map / sign / verify / decide for sector packs  
+- treat it as an engagement gate, not a transparency product  
+
+After PR 4–8:
+
+- run `npm run transparency` and attach the JSON to a Pioneer-facing viewer  
+- still label reserve inputs as issuer-attested, not on-chain fact  
+
+Never:
+
+- tell users the floor is “the live Pi price”  
+- halt markets from `K_DROP` without a human policy  
+- claim coins from an exchange vs mined using this stack  
+
+---
+
+## 10. Ready-for-team definition of done
+
+Print this in `docs/MATURITY.md` and tick it:
+
+- [ ] Phase A green  
+- [ ] Four Nicolas concepts have modules **and** vectors **and** commands  
+- [ ] Dashboard cannot invent `ALLOW` or a floor number  
+- [ ] `p_floor` formula fixtures match \(\frac{R\cdot Q}{(R+S)^{2}}\) after gcd  
+- [ ] `x·y=k` drop beyond tau is `K_DROP`  
+- [ ] Escrow revocation is a dedicated attested status  
+- [ ] `npm run ci` green on Node 18/20/22 × Linux/Windows  
+- [ ] Python agrees on PEP codes  
+- [ ] README matches maturity  
+- [ ] No superiority claim vs piproof until this list is complete  
+

@@ -1,0 +1,9 @@
+{
+  "name": "second-replay",
+  "spec": "SIGNET-RECEIPT-v1",
+  "expect": {
+    "first": "OK",
+    "second": "RECEIPT_REPLAY",
+    "failed_claim_burns": false
+  }
+}

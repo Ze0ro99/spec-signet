@@ -1,0 +1,7 @@
+{
+  "name": "escrow-stale",
+  "spec": "SIGNET-ESCROW-v1",
+  "expect": {
+    "code": "ESCROW_STALE"
+  }
+}

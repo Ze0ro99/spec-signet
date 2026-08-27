@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec", "status", "escrow_id", "key_id", "key_fingerprint", "revoked_at_ms", "as_of_ms", "registry_epoch", "nonce", "anchor", "issuer", "signature"],
+  "properties": {
+    "spec": { "const": "SIGNET-ESCROW-v1" },
+    "status": { "enum": ["LOCKED", "UNLOCKED", "SIGNING_AUTHORITY_REVOKED"] },
+    "escrow_id": { "type": "string" },
+    "key_id": { "type": "string" },
+    "key_fingerprint": { "type": "string" },
+    "revoked_at_ms": { "type": "integer", "minimum": 0 },
+    "as_of_ms": { "type": "integer", "minimum": 0 },
+    "registry_epoch": { "type": "string" },
+    "nonce": { "type": "string", "minLength": 16 },
+    "anchor": {},
+    "issuer": { "type": "string" },
+    "signature": { "type": "string" }
+  }
+}

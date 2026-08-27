@@ -1,0 +1,8 @@
+{
+  "name": "escrow-valid",
+  "spec": "SIGNET-ESCROW-v1",
+  "expect": {
+    "valid": "attested_claim",
+    "bad_or_stale": "UNVERIFIABLE"
+  }
+}

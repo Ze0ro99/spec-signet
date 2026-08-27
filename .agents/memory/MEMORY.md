@@ -1,0 +1,1 @@
+- [Next build workflow](next-build-workflow.md) — stop the dev preview before running a production build to avoid concurrent `.next` manifest races.

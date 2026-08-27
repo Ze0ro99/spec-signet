@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 function normalize(value, path = '$') {
   if (value === null || typeof value === 'boolean' || typeof value === 'string') return typeof value === 'string' ? value.normalize('NFC') : value;
   if (typeof value === 'number') {
-    if (!Number.isSafeInteger(value) || value < 0 || Object.is(value, -0)) throw new TypeError(`invalid integer at ${path}`);
+    if (!Number.isFinite(value) || value < 0 || Object.is(value, -0)) throw new TypeError(`invalid number at ${path}`);
     return value;
   }
   if (Array.isArray(value)) return value.map((v, i) => { if (!(i in value)) throw new TypeError(`array hole at ${path}`); return normalize(v, `${path}[${i}]`); });
@@ -20,7 +20,16 @@ export function sha256(value) { return `sha256:${createHash('sha256').update(can
 export function hashBytes(bytes) { return `sha256:${createHash('sha256').update(bytes).digest('hex')}`; }
 export { normalize };
 
-export const DOMAINS = Object.freeze({ PEP:'SIGNET-PEP-v1\n', KEY:'SIGNET-KEY-v1\n', ESCROW:'SIGNET-ESCROW-v1\n', FLOOR:'SIGNET-FLOOR-v1\n', ALLOC:'SIGNET-ALLOC-v1\n', RECEIPT:'SIGNET-RECEIPT-v1\n' });
+export const DOMAINS = Object.freeze({
+  PEP: 'SIGNET-PEP-v1\n',
+  KEY: 'SIGNET-KEY-v1\n',
+  ESCROW: 'SIGNET-ESCROW-v1\n',
+  FLOOR: 'SIGNET-FLOOR-v1\n',
+  POOL: 'SIGNET-POOL-v1\n',
+  ALLOC: 'SIGNET-ALLOC-v1\n',
+  DASH: 'SIGNET-DASH-v1\n',
+  RECEIPT: 'SIGNET-RECEIPT-v1\n',
+});
 export const signedBytes = (domain, body) => new TextEncoder().encode(domain + canonicalString(body));
 export const b64 = (bytes) => Buffer.from(bytes).toString('base64');
 export const unb64 = (s) => Buffer.from(s, 'base64');

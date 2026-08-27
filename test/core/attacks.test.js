@@ -1,3 +1,4 @@
+ v0/ze0ro99-a8e6e867
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPair, sign } from '../../src/core/keys-crypto.js';
@@ -33,3 +34,14 @@ for (const [name, mutate, expected] of cases) test(name, async () => { const f=f
 test('bad signature is schema-valid and denied as INVALID_SIGNATURE', async () => { const f=fixture(); const event = { ...f.event, signature: 'x'.repeat(88) }; assert.equal((await verifyEngagement(event, f.ctx)).code, 'INVALID_SIGNATURE'); });
 test('KYC mismatch is denied', async () => { const f=fixture(); f.r.users.set(f.event.pioneer_uid_hash, { kyc: false, mainnet: true }); assert.equal((await verifyEngagement(f.event, f.ctx)).code, 'INELIGIBLE_USER'); });
 test('Mainnet mismatch is denied', async () => { const f=fixture(); f.r.users.set(f.event.pioneer_uid_hash, { kyc: true, mainnet: false }); assert.equal((await verifyEngagement(f.event, f.ctx)).code, 'INELIGIBLE_USER'); });
+
+import test from 'node:test';import assert from 'node:assert/strict';import {generateKeyPair,sign} from '../../src/core/keys-crypto.js';import {Registry} from '../../src/core/registry.js';import {InMemoryNonceStore} from '../../src/core/nonces.js';import {verifyEngagement} from '../../src/core/verify.js';
+test('valid event then replay is denied',async()=>{const kp=generateKeyPair(),r=new Registry();r.addApp('app.marketplace','secret');r.addKey('app.marketplace',{key_id:'k1',pubkey:kp.publicKey});const uid=r.uidHash('app.marketplace','pioneer-1');r.addUser(uid);const body={spec:'SIGNET-PEP-v1',app_id:'app.marketplace',key_id:'k1',pioneer_uid_hash:uid,action_id:'retail.order_delivered',utility_class:'A',weight:50,timestamp_ms:1000,nonce:'n-retail-0000001'};const e={...body,signature:sign(body,kp.privateKey)};const ctx={registry:r,nonceStore:new InMemoryNonceStore(),nowMs:1000,maxSkewMs:100,classCeilings:{A:100,B:20,C:5}};assert.equal((await verifyEngagement(e,ctx)).code,'OK');assert.equal((await verifyEngagement(e,ctx)).code,'REPLAY_DETECTED');});
+test('bad signature is denied',async()=>{const r=new Registry();r.addApp('a','s');const ctx={registry:r,nonceStore:new InMemoryNonceStore()};assert.equal((await verifyEngagement({},ctx)).code,'SCHEMA');});
+test('schema-valid forged signature is INVALID_SIGNATURE', async () => {
+  const f = await import('../helpers/fixtures.js').then(({ fixture }) => fixture());
+  const forged = { ...f.event, signature: `B${f.event.signature.slice(1)}` };
+  if (forged.signature === f.event.signature) forged.signature = `C${f.event.signature.slice(1)}`;
+  assert.equal((await verifyEngagement(forged, f.ctx)).code, 'INVALID_SIGNATURE');
+});
+ main

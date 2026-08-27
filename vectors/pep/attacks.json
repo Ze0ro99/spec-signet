@@ -1,0 +1,18 @@
+{
+  "name": "core-attack-matrix",
+  "required_codes": [
+    "SCHEMA",
+    "UNKNOWN_APP",
+    "UNKNOWN_KEY",
+    "KEY_NOT_YET_VALID",
+    "EXPIRED_KEY",
+    "REVOKED_KEY",
+    "INVALID_SIGNATURE",
+    "TIMESTAMP_EXPIRED",
+    "TIMESTAMP_IN_FUTURE",
+    "WEIGHT_OVERFLOW",
+    "INELIGIBLE_USER",
+    "REPLAY_DETECTED"
+  ],
+  "minimum_exact_cases": 20
+}

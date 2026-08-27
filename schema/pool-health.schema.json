@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec", "registry_epoch", "tau_bps", "samples", "issued_at_ms", "issuer", "nonce", "signature"],
+  "properties": {
+    "spec": { "const": "SIGNET-POOL-v1" },
+    "registry_epoch": { "type": "string" },
+    "tau_bps": { "type": "integer", "minimum": 0, "maximum": 10000 },
+    "samples": { "type": "array" },
+    "issued_at_ms": { "type": "integer", "minimum": 0 },
+    "issuer": { "type": "string" },
+    "nonce": { "type": "string" },
+    "signature": { "type": "string" }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "spec": "SIGNET-DASH-v1",
+  "registry_epoch": "epoch-1",
+  "issued_at_ms": 1764000000000,
+  "escrow": {
+    "status": "ATTESTED",
+    "code": "ATTESTED",
+    "claim": {
+      "spec": "SIGNET-ESCROW-v1",
+      "status": "SIGNING_AUTHORITY_REVOKED",
+      "escrow_id": "launchpad.escrow.main",
+      "key_id": "escrow-k1",
+      "key_fingerprint": "sha256:67a13f623f94dbdf2bcb7746c54ee4dc241fe060b97fa7a81cddd23fdf970b9f",
+      "revoked_at_ms": 1763999999000,
+      "as_of_ms": 1764000000000,
+      "registry_epoch": "epoch-1",
+      "nonce": "escrow-fixture-0001",
+      "anchor": null,
+      "issuer": "launchpad",
+      "signature": "AuLJvdipbOiFIEQZHJZHlKHB6CamOJ/yzb+B79+CdlrTDJ4uDXnIeFUSyxbfs8oziBmjODJtQdW+EU2F72TZDw=="
+    }
+  },
+  "pfloor": {
+    "status": "ATTESTED",
+    "code": "ATTESTED",
+    "numerator": "1",
+    "denominator": "400",
+    "method_id": "circulating-v1"
+  },
+  "pool": {
+    "status": "K_DROP",
+    "code": "K_DROP",
+    "k": "9000"
+  },
+  "engagement": {
+    "window_start_ms": 1763827200000,
+    "window_end_ms": 1764000000001,
+    "accepted_events": 2,
+    "leaderboard": [
+      {
+        "app_id": "app.marketplace",
+        "poa": 2,
+        "pou": 4,
+        "consistency_ppm": 666666,
+        "score": 2
+      }
+    ],
+    "consistency_note": "Policy-ALLOW events only; scores are capped by protocol and manifest ceilings."
+  },
+  "alloc": {
+    "reject_counts": {
+      "REPLAY_DETECTED": 1
+    },
+    "sum_eligible_weight": 2
+  },
+  "unverified_inputs": [],
+  "signature": "MQW2ylbbSSHH7iy4ptBw3PMCA3IpVZEmgf/hdGNOWopZFdBxx+ScVbUSv3aOpEfbMcis39cj7YQ69frnYfxBDA=="
+}

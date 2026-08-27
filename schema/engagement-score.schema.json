@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["window_start_ms", "window_end_ms", "accepted_events", "leaderboard", "consistency_note"],
+  "properties": {
+    "window_start_ms": { "type": "integer", "minimum": 0 },
+    "window_end_ms": { "type": "integer", "minimum": 0 },
+    "accepted_events": { "type": "integer", "minimum": 0 },
+    "leaderboard": { "type": "array" },
+    "consistency_note": { "type": "string" }
+  }
+}
