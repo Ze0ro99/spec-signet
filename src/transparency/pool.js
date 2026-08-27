@@ -1,0 +1,1 @@
+export function poolInvariant(samples,tau){return samples.map((s,i)=>{const k=s.x*s.y; if(i===0)return {...s,k,status:'K_OK'};const prior=samples[i-1].x*samples[i-1].y;const delta=k-prior;return {...s,k,status:delta< -Math.abs(prior)*tau?'K_DROP':delta>0?'K_UP':'K_OK'};});}
