@@ -5,6 +5,8 @@ import { Registry } from '../../src/core/registry.js';
 import { InMemoryNonceStore } from '../../src/core/nonces.js';
 import { verifyEngagement } from '../../src/core/verify.js';
 
+function signedVariant(event, patch, kp) { const { signature, ...body } = event; const next = { ...body, ...patch }; return { ...next, signature: sign(next, kp.privateKey) }; }
+
 function fixture() {
   const kp = generateKeyPair(); const r = new Registry(); r.addApp('app.marketplace', 'secret'); r.addKey('app.marketplace', { key_id: 'k1', pubkey: kp.publicKey });
   const uid = r.uidHash('app.marketplace', 'pioneer-1'); r.addUser(uid);
@@ -15,15 +17,15 @@ function fixture() {
 const cases = [
   ['forged signature', (x) => ({ ...x, signature: 'x'.repeat(88) }), 'INVALID_SIGNATURE'],
   ['post-sign mutation', (x) => ({ ...x, weight: 51 }), 'INVALID_SIGNATURE'],
-  ['stale timestamp', (x) => ({ ...x, timestamp_ms: 1, signature: sign({ ...x, timestamp_ms: 1 }, f.kp.privateKey) }), 'TIMESTAMP_EXPIRED'],
-  ['future timestamp', (x) => ({ ...x, timestamp_ms: 10000, signature: sign({ ...x, timestamp_ms: 10000 }, f.kp.privateKey) }), 'TIMESTAMP_IN_FUTURE'],
-  ['weight overflow', (x) => ({ ...x, weight: 101, signature: sign({ ...x, weight: 101 }, f.kp.privateKey) }), 'WEIGHT_OVERFLOW'],
-  ['unknown app', (x) => ({ ...x, app_id: 'unknown', signature: sign({ ...x, app_id: 'unknown' }, f.kp.privateKey) }), 'UNKNOWN_APP'],
+  ['stale timestamp', (x, f) => signedVariant(x, { timestamp_ms: 1 }, f.kp), 'TIMESTAMP_EXPIRED'],
+  ['future timestamp', (x, f) => signedVariant(x, { timestamp_ms: 10000 }, f.kp), 'TIMESTAMP_IN_FUTURE'],
+  ['weight overflow', (x, f) => signedVariant(x, { weight: 101 }, f.kp), 'WEIGHT_OVERFLOW'],
+  ['unknown app', (x, f) => ({ ...x, app_id: 'unknown', signature: sign({ ...x, app_id: 'unknown' }, f.kp.privateKey) }), 'UNKNOWN_APP'],
   ['unknown key', (x) => ({ ...x, key_id: 'missing' }), 'UNKNOWN_KEY'],
-  ['bad spec', (x) => ({ ...x, spec: 'BAD', signature: sign({ ...x, spec: 'BAD' }, f.kp.privateKey) }), 'SCHEMA'],
+  ['bad spec', (x, f) => ({ ...x, spec: 'BAD', signature: sign({ ...x, spec: 'BAD' }, f.kp.privateKey) }), 'SCHEMA'],
   ['extra field', (x) => ({ ...x, eligible: true }), 'SCHEMA'],
-  ['missing field', (x) => { const { signature, ...b } = x; delete b.weight; return { ...b, signature: sign(b, f.kp.privateKey) }; }, 'SCHEMA'],
-  ['unregistered pioneer', (x) => ({ ...x, pioneer_uid_hash: 'h1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=', signature: sign({ ...x, pioneer_uid_hash: 'h1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=' }, f.kp.privateKey) }), 'INELIGIBLE_USER'],
+  ['missing field', (x, f) => { const { signature, ...b } = x; delete b.weight; return { ...b, signature: sign(b, f.kp.privateKey) }; }, 'SCHEMA'],
+  ['unregistered pioneer', (x, f) => signedVariant(x, { pioneer_uid_hash: 'h1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=' }, f.kp), 'INELIGIBLE_USER'],
 ];
 
 test('valid event then replay is denied', async () => { const f=fixture(); assert.equal((await verifyEngagement(f.event, f.ctx)).code, 'OK'); assert.equal((await verifyEngagement(f.event, f.ctx)).code, 'REPLAY_DETECTED'); });
