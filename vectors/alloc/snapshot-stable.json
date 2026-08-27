@@ -1,0 +1,1 @@
+{"name":"snapshot-stable","accepted":[{"alloc_eligible":true,"weight":2}],"rejects":{"REPLAY_DETECTED":1},"expect":{"normalization":"alloc-only"}}

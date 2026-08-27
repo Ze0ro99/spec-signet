@@ -1,3 +1,20 @@
+ v0/ze0ro99-a8e6e867
+import { canonicalBytes } from '../core/canonical.js'
+
+export function dashboard(input) {
+  return {
+    escrow: input.escrow ?? 'UNVERIFIABLE',
+    floor: input.floor ?? 'UNVERIFIABLE',
+    pool: input.pool ?? [],
+    engagement: input.engagement ?? [],
+    alloc: input.alloc ?? null,
+  }
+}
+
+export function dashboardBytes(input) {
+  return canonicalBytes(dashboard(input))
+}
+
 import { DOMAINS } from '../core/canonical.js';
 import { sign, verifySignature } from '../core/keys-crypto.js';
 
@@ -47,3 +64,4 @@ export function verifyDashboardSnapshot(snapshot, publicKey) {
   const { signature, ...body } = snapshot;
   return verifySignature(body, signature, publicKey, DOMAINS.DASH);
 }
+ main

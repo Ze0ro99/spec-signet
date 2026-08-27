@@ -1,4 +1,12 @@
 {
+ v0/ze0ro99-a8e6e867
+  "escrow": { "code": "UNVERIFIABLE" },
+  "floor": { "code": "OK", "numerator": "1", "denominator": "400" },
+  "pool": { "code": "K_OK" },
+  "engagement": { "code": "OK" },
+  "alloc": { "code": "OK" }
+}
+
   "name": "dashboard-stable",
   "spec": "SIGNET-DASH-v1",
   "expect": {
@@ -6,3 +14,4 @@
     "missing_floor": "UNVERIFIABLE"
   }
 }
+ main

@@ -6,9 +6,9 @@
 
 **Domain-separated. Replay-protected. Registry-gated. Zero runtime dependencies.**
 
-> **Maturity: v1.0 reference implementation.** SIGNET is designed for auditability
-> and independent reimplementation. It is not a production deployment or a
-> substitute for external security review.
+> **Maturity: 0.x scaffold.** SIGNET is designed for auditability and independent
+> reimplementation. It is not production-ready, externally audited, or a
+> replacement for piproof or an external security review.
 
 [![Node](https://img.shields.io/badge/node-%E2%89%A518-brightgreen.svg)](https://nodejs.org)
 [![Runtime dependencies](https://img.shields.io/badge/runtime%20dependencies-0-success.svg)](#-design-principles)
@@ -24,7 +24,8 @@
 > product and does not claim endorsement by Pi Network or any other ecosystem.
 
 SIGNET provides a narrow, cryptographically verifiable foundation for signed
-engagement evidence. It keeps protocol evidence separate from sector-specific
+engagement evidence. It is an off-chain stack: it does not deploy contracts, read
+chain state, or attest whether coins were mined or withdrawn from an exchange. It keeps protocol evidence separate from sector-specific
 ideas: the PEP engagement body stays closed, while sector packs, receipts,
 allocation, and transparency claims operate in their own planes.
 

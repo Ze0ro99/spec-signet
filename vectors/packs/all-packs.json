@@ -1,0 +1,8 @@
+[
+  { "pack": "retail-purchase-v1", "action_id": "retail.order_delivered", "expect": "ALLOW" },
+  { "pack": "gaming-achievement-v1", "action_id": "gaming.achievement", "expect": "ALLOW" },
+  { "pack": "service-fulfillment-v1", "action_id": "service.fulfilled", "expect": "ALLOW" },
+  { "pack": "reward-claim-v1", "action_id": "reward.claim_eligible", "expect": "ALLOW" },
+  { "pack": "governance-signal-v1", "action_id": "gov.signal", "expect": "ALLOW" },
+  { "pack": "agent-action-v1", "action_id": "agent.acted", "expect": "ALLOW" }
+]
