@@ -5,9 +5,16 @@ import { decide } from '../policy/decide.js';
 import { claimReceipt } from '../receipt/issue.js';
 import { snapshot } from '../alloc/snapshot.js';
 import { DOMAINS } from '../core/canonical.js';
+import { catalogHash } from '../adapter/catalog.js';
 
 export function createSignet({ registry, nonceStore, receiptStore, catalog, packs, now = Date.now, issuerKey }) {
-  const ctx = { registry, nonceStore, nowMs: now(), classCeilings: catalog.class_ceilings };
+  const ctx = {
+    registry,
+    nonceStore,
+    nowMs: now(),
+    classCeilings: catalog.class_ceilings,
+    catalog_hash: catalogHash(),
+  };
   return {
     map: (context) => mapContext({
       ...context,

@@ -1,0 +1,5 @@
+{
+  "name": "k-drop",
+  "spec": "SIGNET-POOL-v1",
+  "expect": { "code": "K_DROP", "tau_bps": 50 }
+}

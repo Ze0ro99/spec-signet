@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec", "registry_epoch", "method_id", "R", "S", "Q", "numerator", "denominator", "issued_at_ms", "issuer", "nonce", "signature"],
+  "properties": {
+    "spec": { "const": "SIGNET-FLOOR-v1" },
+    "registry_epoch": { "type": "string" },
+    "method_id": { "const": "circulating-v1" },
+    "R": { "pattern": "^[0-9]+$" },
+    "S": { "pattern": "^[0-9]+$" },
+    "Q": { "pattern": "^[0-9]+$" },
+    "numerator": { "pattern": "^[0-9]+$" },
+    "denominator": { "pattern": "^[1-9][0-9]*$" },
+    "issued_at_ms": { "type": "integer", "minimum": 0 },
+    "issuer": { "type": "string" },
+    "nonce": { "type": "string" },
+    "signature": { "type": "string" }
+  }
+}

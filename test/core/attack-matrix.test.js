@@ -57,7 +57,7 @@ test('the core attack matrix returns exact denial codes', async () => {
     const event = await build(f);
     const result = await verifyEngagement(event, f.ctx);
     assert.equal(result.code, expected, name);
-    assert.deepEqual(Object.keys(result).sort(), ['code', 'crypto'].sort(), `${name} result shape`);
+    assert.deepEqual(Object.keys(result).sort(), ['code', 'crypto', 'evidence_id', 'registry_epoch'].sort(), `${name} result shape`);
   }
 });
 

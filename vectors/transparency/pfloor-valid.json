@@ -1,0 +1,6 @@
+{
+  "name": "pfloor-valid",
+  "spec": "SIGNET-FLOOR-v1",
+  "inputs": { "R": 100, "S": 100, "Q": 1 },
+  "expect": { "numerator": "1", "denominator": "400" }
+}

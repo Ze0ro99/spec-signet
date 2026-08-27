@@ -1,0 +1,8 @@
+{
+  "name": "escrow-revoked",
+  "spec": "SIGNET-ESCROW-v1",
+  "expect": {
+    "valid": "ATTESTED",
+    "status": "SIGNING_AUTHORITY_REVOKED"
+  }
+}

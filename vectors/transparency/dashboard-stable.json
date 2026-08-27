@@ -1,0 +1,8 @@
+{
+  "name": "dashboard-stable",
+  "spec": "SIGNET-DASH-v1",
+  "expect": {
+    "same_inputs_same_bytes": true,
+    "missing_floor": "UNVERIFIABLE"
+  }
+}

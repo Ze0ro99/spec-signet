@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec", "registry_epoch", "issued_at_ms", "escrow", "pfloor", "pool", "engagement", "alloc", "unverified_inputs"],
+  "properties": {
+    "spec": { "const": "SIGNET-DASH-v1" },
+    "registry_epoch": { "type": "string" },
+    "issued_at_ms": { "type": "integer", "minimum": 0 },
+    "escrow": { "type": "object" },
+    "pfloor": { "type": "object" },
+    "pool": { "type": "object" },
+    "engagement": { "type": "object" },
+    "alloc": { "type": "object" },
+    "unverified_inputs": { "type": "array" },
+    "signature": { "type": "string" }
+  }
+}
